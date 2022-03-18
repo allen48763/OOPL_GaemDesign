@@ -1,11 +1,15 @@
-#include<string>
-#include<iostream>
-#include<cstdlib>
-#include<ctime>
+#include <string>
+#include <iostream>
 
-bool Guess(int number){
+bool Guess(int number) {
     return false;
 }
-int main(){
 
+int main() {
+    int guess;
+    do {
+        std::cin >> guess;
+    }
+    while (!Guess(guess));
+    return 0;
 }
