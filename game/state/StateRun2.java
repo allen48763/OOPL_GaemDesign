@@ -2,6 +2,7 @@ package tw.edu.ntut.csie.game.state;
 
 import static tw.edu.ntut.csie.game.Game.GAME_FRAME_HEIGHT;
 import static tw.edu.ntut.csie.game.Game.GAME_FRAME_WIDTH;
+import static tw.edu.ntut.csie.game.Game.OVER_STATE;
 
 import android.graphics.Bitmap;
 import android.support.annotation.AnimRes;
@@ -34,11 +35,12 @@ import tw.edu.ntut.csie.game.extend.Enemy;
 
 public class StateRun2 extends GameState {
     public static final int DEFAULT_SCORE_DIGITS = 4;
-    double fall_velocity = 0;
-    double fall_acceleration = 1;
+    double fall_velocity;
+    double fall_acceleration;
     private MovingBitmap[] hero_hp;
-    private int hp = 5;
 
+    private int hp;
+    private int Invincible;
     private boolean Dieding = false;
 
     private boolean keepPressW = false;
@@ -58,9 +60,9 @@ public class StateRun2 extends GameState {
     private int[] x = {-8,-8,-5,-5,-2,-2,-1,0};
     private int[] y = {72,104,136,168,200,0};
 
-    int i = 0;
-    int time = 0;
-    int index = 0;
+    int i;
+    int time;
+    int index;
     private MovingBitmap _background;
 
     int bulletMAX = 1000;
@@ -68,7 +70,7 @@ public class StateRun2 extends GameState {
 
     private int[] bulletDir;
     private boolean[] bulletHit;
-    int bulletCount = 0;
+    int bulletCount;
 
     private BitmapButton ButtonW;
     private BitmapButton ButtonA;
@@ -83,10 +85,10 @@ public class StateRun2 extends GameState {
     int boobMax = 20;
     private Enemy[] boob1;
 
-    int towerMax = 3;
+    int towerMax = 1;
     private Enemy2[] tower;
 
-    int ufoMax = 1;
+    int ufoMax = 10;
     private Enemy3[] ufo;
 
     private Integer _scores;
@@ -103,6 +105,10 @@ public class StateRun2 extends GameState {
 
     @Override
     public void initialize(Map<String, Object> data) {
+
+        fall_velocity = 0;
+        fall_acceleration = 1;
+
         hero_hp = new MovingBitmap[5];
         bullet = new MovingBitmap[bulletMAX];
         bulletDir = new int[bulletMAX];
@@ -112,6 +118,14 @@ public class StateRun2 extends GameState {
         tower = new Enemy2[towerMax];
         ufo = new Enemy3[ufoMax];
         _map = new GameMap();
+
+        hp = 5;
+        Invincible = 160;
+        bulletCount = 0;
+
+        i = 0;
+        time = 0;
+        index = 0;
 
         for(int i = 0; i < boobMax; i++){
             boob1[i] = new Enemy(500+i*100,0);
@@ -172,6 +186,7 @@ public class StateRun2 extends GameState {
             if(bullet[i] != null){
                 bullet[i].show();
             }
+
         }
         for(int i = 0; i < boobMax; i++){
             boob1[i].show();
@@ -191,23 +206,25 @@ public class StateRun2 extends GameState {
         player1.show();
 
         _scores.show();
-        _scores.setValue(bulletCount);
+        _scores.setValue(Invincible);
 
-        for(int i = 0; i < hp; i++){
+        for(int i = 0; i < hp; i++) {
             hero_hp[i].show();
         }
-
-
+        if(Invincible < 200){
+            Invincible += 1;
+        }
     }
 
     @Override
     public void move() {
         for(int i = 0; i < boobMax; i++){
+            boob1[i].Obj_trigger(_map);
             boob1[i].move();
             boob1[i].isTrigger(px);
+
             if(!boob1[i].getState()){
-                if(isCollision(boob1[i])&&!Dieding){
-                    changeState(Game.RUNNING_STATE);
+                if(isCollision(boob1[i])&&!Dieding&&(Invincible == 200)){
                     if(px > boob1[i].getX1())
                         collisionToR = true;
                     else
@@ -216,7 +233,7 @@ public class StateRun2 extends GameState {
                     keepJump = true;
                     jump = true;
                     hp -= 1;
-
+                    Invincible = 160;
                 }
             }
         }
@@ -233,7 +250,7 @@ public class StateRun2 extends GameState {
             }
             for(int j = 0; j <tower[i].getBulletCount(); j++){
                 if(!tower[i].getBulletHit(j)){
-                    if(isCollision(tower[i].getBullet(j))&&!Dieding){
+                    if(isCollision(tower[i].getBullet(j))&&!Dieding&&(Invincible == 200)){
                         if(px > boob1[i].getX1())
                             collisionToR = true;
                         else
@@ -243,7 +260,7 @@ public class StateRun2 extends GameState {
                         keepJump = true;
                         jump = true;
                         hp -= 1;
-
+                        Invincible = 160;
                     }
                 }
             }
@@ -304,11 +321,11 @@ public class StateRun2 extends GameState {
         else if(passH < 200) index = 3;
         else if(passH < 224) index = 4;
         else{
-
             Dieding = true;
             keepJump = true;
-            jump = false;
+            jump = true;
             hp -= 1;
+            Invincible = 160;
         }
 
         //isTrigger 用來判斷是否碰到地面
@@ -347,12 +364,12 @@ public class StateRun2 extends GameState {
         if(!Dieding){//如果沒有死
             if(keepPressW){//如果W按鍵被點擊
                 if(isRight){//如果人物當前是面向右邊
-                    player1.setVisible(11);
                     HeroState = 11;
+                    player1.setVisible(11 + (Invincible % 2)*20);
                 }
                 else{//如果人物當前是面向左邊
-                    player1.setVisible(12);
                     HeroState = 12;
+                    player1.setVisible(12 + (Invincible % 2)*20);
                 }
                 if(keepPressSh)//如果Shoot按鍵被點擊
                     //發射子彈
@@ -365,12 +382,12 @@ public class StateRun2 extends GameState {
                     player1.setLocation(px, player1.getY(3));
                 }
                 if(keepPressS){//如果S按鍵被點擊
-                    player1.setVisible(10);
                     HeroState = 10;
+                    player1.setVisible(10 + (Invincible % 2)*20);
                 }
                 else if(keepPressSh){//如果Shoot按鍵被點擊
-                    player1.setVisible(7);
                     HeroState = 7;
+                    player1.setVisible(7 + (Invincible % 2)*20);
                     if(isRight)//如果面向右邊
                         //生成"往右的子彈"
                         makeBullet(player1.getX(), player1.getY(3) - 9, 0);
@@ -379,8 +396,8 @@ public class StateRun2 extends GameState {
                         makeBullet(player1.getX(), player1.getY(3) - 9, 1);
                 }
                 else{
-                    player1.setVisible(6);
                     HeroState = 6;
+                    player1.setVisible(6 + (Invincible % 2)*20);
                 }
             }
 
@@ -410,12 +427,14 @@ public class StateRun2 extends GameState {
                     }
                 }
                 if(keepPressS){
-                    player1.setVisible(5);
                     HeroState = 5;
+                    player1.setVisible(5 + (Invincible % 2)*20);
+
                 }
                 else if(keepPressSh){
-                    player1.setVisible(2);
+
                     HeroState = 2;
+                    player1.setVisible(2 + (Invincible % 2)*20);
 
                     if(isRight)
                         makeBullet(player1.getX() - 2, player1.getY(3) - 9, 0);
@@ -423,8 +442,9 @@ public class StateRun2 extends GameState {
                         makeBullet(player1.getX() - 2, player1.getY(3) - 9, 1);
                 }
                 else{
-                    player1.setVisible(1);
                     HeroState = 1;
+                    player1.setVisible(1 + (Invincible % 2)*20);
+
                 }
             }
             else if(keepPressS&&!keepPressA&&!keepPressD){
@@ -435,23 +455,26 @@ public class StateRun2 extends GameState {
                         makeBullet(player1.getX(), player1.getY(3) + 2, 1);
                 }
                 if(isRight){
-                    player1.setVisible(4);
                     HeroState = 4;
+                    player1.setVisible(4 + (Invincible % 2)*20);
+
                 }
                 else{
-                    player1.setVisible(9);
                     HeroState = 9;
+                    player1.setVisible(9 + (Invincible % 2)*20);
+
                 }
             }
 
             else{
                 if(isRight){
-                    player1.setVisible(3);
                     HeroState = 3;
+                    player1.setVisible(3 + (Invincible % 2)*20);
+
                 }
                 else{
-                    player1.setVisible(8);
                     HeroState = 8;
+                    player1.setVisible(8 + (Invincible % 2)*20);
                 }
                 if(keepPressSh){
                     if(isRight)
@@ -471,6 +494,9 @@ public class StateRun2 extends GameState {
             if(isRight){
                 player1.setVisible(13);
                 if(player1.isEndDied(13)){
+                    if(hp <= 0){
+                        changeState(OVER_STATE);
+                    }
                     Dieding = false;
                     px = 100;
                     py = 20;
@@ -483,6 +509,9 @@ public class StateRun2 extends GameState {
             else{
                 player1.setVisible(14);
                 if(player1.isEndDied(14)){
+                    if(hp <= 0){
+                        changeState(OVER_STATE);
+                    }
                     Dieding = false;
                     px = 100;
                     py = 20;
@@ -553,6 +582,7 @@ public class StateRun2 extends GameState {
 
         ButtonJump.release();
         ButtonJump = null;
+
     }
 
     @Override
@@ -726,6 +756,13 @@ public class StateRun2 extends GameState {
         else {
             return false;
         }
+    }
+    public void reLifeSet(){
+        Dieding = true;
+        keepJump = true;
+        jump = true;
+        hp -= 1;
+        Invincible = 30;
     }
 }
 

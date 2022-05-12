@@ -218,6 +218,9 @@ public class StateRun extends GameState {
 
     @Override
     public void move() {
+        if(px < -2600){
+            changeState(Game.RUNNING_STATE2);
+        }
         for(int i = 0; i < boobMax; i++){
             boob1[i].Obj_trigger(_map);
             boob1[i].move();
