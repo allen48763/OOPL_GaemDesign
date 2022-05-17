@@ -68,6 +68,7 @@ public class GameEngine implements Runnable {
      * 遊戲引擎內部狀態。
      */
     private boolean _paused = false;
+    private boolean _gameInPause = false;
     private boolean _running = false;
 
     /**
@@ -247,6 +248,7 @@ public class GameEngine implements Runnable {
     public void resume() {
         synchronized (this) {
             _paused = false;
+            _gameInPause =false;
             _gameState.resume();
         }
     }

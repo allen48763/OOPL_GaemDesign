@@ -164,7 +164,7 @@ public class StateRun2 extends GameState {
 
         _scores = new Integer(DEFAULT_SCORE_DIGITS, 0, 550, 10);
 
-        _music = new Audio(R.raw.ntut);
+        _music = new Audio(R.raw.stage);
         _music.setRepeating(true);
         _music.play();
 

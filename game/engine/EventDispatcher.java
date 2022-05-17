@@ -76,7 +76,7 @@ class EventDispatcher implements OnTouchListener, SensorEventListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         synchronized (_engine) {
-            if (_engine.isPaused() || _engine.getGameState() == null) {
+            if( _engine.getGameState() == null) {
                 return false;
             }
             ArrayList<Pointer> pointers = getPointers(event);

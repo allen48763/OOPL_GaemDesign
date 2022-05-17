@@ -50,6 +50,7 @@ public class StateRun extends GameState {
     private boolean keepPressSh = false;
 
     int runSpeed = 7;
+    boolean b = false;
 
     boolean isTrigger = false;
 
@@ -79,6 +80,8 @@ public class StateRun extends GameState {
     private BitmapButton ButtonSh;
     private BitmapButton ButtonJump;
 
+    private BitmapButton Button_RunOrPause;
+
     private Hero player1;
     private int HeroState;
 
@@ -91,10 +94,10 @@ public class StateRun extends GameState {
     int ufoMax = 10;
     private Enemy3[] ufo;
 
-    private Integer _scores;
+    //private Integer _scores;
     private GameMap _map;
     private Audio _music;
-
+    private MovingBitmap pause_UI;
     private Pointer _pointer1;
     private Pointer _pointer2;
 
@@ -160,11 +163,15 @@ public class StateRun extends GameState {
         ButtonSh = new BitmapButton(R.drawable.shoot_button, R.drawable.shoot_button2, 176, 300);
         ButtonJump = new BitmapButton(R.drawable.jump1, R.drawable.jump2, 236, 300);
 
+        Button_RunOrPause = new BitmapButton(R.drawable.button_pause, 600, 10);
+
         _background = new MovingBitmap(R.drawable.map2);
+        pause_UI = new MovingBitmap(R.drawable.ui_pasue, 210, 20);
+        pause_UI.setVisible(false);
 
-        _scores = new Integer(DEFAULT_SCORE_DIGITS, 0, 550, 10);
+        //_scores = new Integer(DEFAULT_SCORE_DIGITS, 0, 550, 10);
 
-        _music = new Audio(R.raw.ntut);
+        _music = new Audio(R.raw.stage);
         _music.setRepeating(true);
         _music.play();
 
@@ -202,11 +209,12 @@ public class StateRun extends GameState {
         ButtonD.show();
         ButtonSh.show();
         ButtonJump.show();
+        Button_RunOrPause.show();
 
         player1.show();
 
-        _scores.show();
-        _scores.setValue(Invincible);
+        //_scores.show();
+        //_scores.setValue(Invincible);
 
         for(int i = 0; i < hp; i++) {
             hero_hp[i].show();
@@ -214,6 +222,7 @@ public class StateRun extends GameState {
         if(Invincible < 200){
             Invincible += 1;
         }
+        pause_UI.show();
     }
 
     @Override
@@ -551,11 +560,14 @@ public class StateRun extends GameState {
         _background.release();
         _background = null;
 
+        pause_UI.release();
+        pause_UI = null;
+
         _map.release();
         _map = null;
 
-        _scores.release();
-        _scores = null;
+        //_scores.release();
+        //_scores = null;
 
         _music.release();
         _music = null;
@@ -586,6 +598,8 @@ public class StateRun extends GameState {
         ButtonJump.release();
         ButtonJump = null;
 
+        Button_RunOrPause.release();
+        Button_RunOrPause = null;
     }
 
     @Override
@@ -602,53 +616,68 @@ public class StateRun extends GameState {
 
     @Override
     public boolean pointerPressed(Pointer actionPointer, List<Pointer> pointers) {
-
-        if(ButtonW.pointerPressed(actionPointer, pointers)){
-            keepPressW = true;
-            return true;
-        }
-        if(ButtonS.pointerPressed(actionPointer, pointers)){
-            keepPressS = true;
-            return true;
-        }
-        if(ButtonA.pointerPressed(actionPointer, pointers)){
-            keepPressA = true;
-            isRight = false;
-            return true;
-        }
-        if(ButtonD.pointerPressed(actionPointer, pointers)){
-            keepPressD = true;
-            isRight = true;
-            return true;
-        }
-        if(ButtonSh.pointerPressed(actionPointer, pointers)){
-            keepPressSh = true;
-            return true;
-        }
-        if(ButtonJump.pointerPressed(actionPointer, pointers)){
-            if(!jump){
-                jump = true;
-                keepJump = true;
+        if(!_engine.isPaused()){
+            if(Button_RunOrPause.pointerPressed(actionPointer, pointers)){
+                _engine.pause();
+                pause_UI.setVisible(true);
+                return true;
             }
-            return true;
+            if(ButtonW.pointerPressed(actionPointer, pointers)){
+                keepPressW = true;
+                return true;
+            }
+            if(ButtonS.pointerPressed(actionPointer, pointers)){
+                keepPressS = true;
+                return true;
+            }
+            if(ButtonA.pointerPressed(actionPointer, pointers)){
+                keepPressA = true;
+                isRight = false;
+                return true;
+            }
+            if(ButtonD.pointerPressed(actionPointer, pointers)){
+                keepPressD = true;
+                isRight = true;
+                return true;
+            }
+            if(ButtonSh.pointerPressed(actionPointer, pointers)){
+                keepPressSh = true;
+                return true;
+            }
+            if(ButtonJump.pointerPressed(actionPointer, pointers)){
+                if(!jump){
+                    jump = true;
+                    keepJump = true;
+                }
+                return true;
+            }
+        }
+        else{
+            if(Button_RunOrPause.pointerPressed(actionPointer, pointers)){
+                _engine.resume();
+                pause_UI.setVisible(false);
+                return true;
+            }
         }
         return false;
     }
 
     @Override
     public boolean pointerMoved(Pointer actionPointer, List<Pointer> pointers) {
-
-        ButtonW.pointerMoved(actionPointer, pointers);
-        ButtonS.pointerMoved(actionPointer, pointers);
-        ButtonA.pointerMoved(actionPointer, pointers);
-        ButtonD.pointerMoved(actionPointer, pointers);
-        if(_pointer1 != null && _pointer2 != null) {
-            if(actionPointer.getID() == _pointer1.getID()){
-                 _pointer1 = actionPointer;
-            }else if (actionPointer.getID() == _pointer2.getID()){
-                _pointer2 = actionPointer;
+        if(!_engine.isPaused()){
+            Button_RunOrPause.pointerMoved(actionPointer, pointers);
+            ButtonW.pointerMoved(actionPointer, pointers);
+            ButtonS.pointerMoved(actionPointer, pointers);
+            ButtonA.pointerMoved(actionPointer, pointers);
+            ButtonD.pointerMoved(actionPointer, pointers);
+            if(_pointer1 != null && _pointer2 != null) {
+                if(actionPointer.getID() == _pointer1.getID()){
+                    _pointer1 = actionPointer;
+                }else if (actionPointer.getID() == _pointer2.getID()){
+                    _pointer2 = actionPointer;
+                }
+                resizeAndroidIcon();
             }
-            resizeAndroidIcon();
         }
         return false;
     }
@@ -657,30 +686,31 @@ public class StateRun extends GameState {
 
     @Override
     public boolean pointerReleased(Pointer actionPointer, List<Pointer> pointers) {
+        if(!_engine.isPaused()){
+            if(ButtonW.pointerReleased(actionPointer,pointers)){
 
+                keepPressW = false;
+                return true;
+            }
+            if(ButtonS.pointerReleased(actionPointer,pointers)){
+                keepPressS = false;
+                return true;
+            }
+            if(ButtonA.pointerReleased(actionPointer, pointers)){
+                keepPressA = false;
+                return true;
+            }
+            if(ButtonD.pointerReleased(actionPointer, pointers)){
+                keepPressD = false;
+                return true;
+            }
+            if(ButtonSh.pointerReleased(actionPointer,pointers)){
+                keepPressSh = false;
+                return true;
+            }
+            if(ButtonJump.pointerReleased(actionPointer, pointers)){
 
-        if(ButtonW.pointerReleased(actionPointer,pointers)){
-            keepPressW = false;
-            return true;
-        }
-        if(ButtonS.pointerReleased(actionPointer,pointers)){
-            keepPressS = false;
-            return true;
-        }
-        if(ButtonA.pointerReleased(actionPointer, pointers)){
-            keepPressA = false;
-            return true;
-        }
-        if(ButtonD.pointerReleased(actionPointer, pointers)){
-            keepPressD = false;
-            return true;
-        }
-        if(ButtonSh.pointerReleased(actionPointer,pointers)){
-            keepPressSh = false;
-            return true;
-        }
-        if(ButtonJump.pointerReleased(actionPointer, pointers)){
-
+            }
         }
         return false;
     }
@@ -759,13 +789,6 @@ public class StateRun extends GameState {
         else {
             return false;
         }
-    }
-    public void reLifeSet(){
-        Dieding = true;
-        keepJump = true;
-        jump = true;
-        hp -= 1;
-        Invincible = 30;
     }
 }
 

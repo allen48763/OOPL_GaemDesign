@@ -19,6 +19,7 @@ public class Enemy implements GameObject {
     int HP = 8;
 
 
+
     boolean isTrigger = false;
     int index = 0;
     double fall_velocity = 0;

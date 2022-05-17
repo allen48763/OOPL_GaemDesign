@@ -4,6 +4,7 @@ import java.util.Map;
 
 import tw.edu.ntut.csie.game.Game;
 import tw.edu.ntut.csie.game.R;
+import tw.edu.ntut.csie.game.core.Audio;
 import tw.edu.ntut.csie.game.core.MovingBitmap;
 import tw.edu.ntut.csie.game.engine.GameEngine;
 import tw.edu.ntut.csie.game.extend.BitmapButton;
@@ -24,12 +25,21 @@ public class StateReady extends AbstractGameState {
     private boolean _showHelp;
     private boolean _showAbout;
 
+    private Audio _music;
+
     public StateReady(GameEngine engine) {
         super(engine);
     }
 
     @Override
     public void initialize(Map<String, Object> data) {
+
+        _music = new Audio(R.raw.base);
+        _music.setRepeating(true);
+        _music.play();
+        addReleasableResource(_music);
+
+
         addGameObject(_helpInfo = new MovingBitmap(R.drawable.help_info));
         addGameObject(_background = new MovingBitmap(R.drawable.state_ready));
         addGameObject(_aboutInfo = new MovingBitmap(R.drawable.about_info));
@@ -106,18 +116,17 @@ public class StateReady extends AbstractGameState {
         addGameObject(_startButton = new BitmapButton(R.drawable.start, R.drawable.start_pressed, 465, 170));
         _startButton.addButtonEventHandler(new ButtonEventHandler() {
             @Override
-            public void perform(BitmapButton button) { changeState(Game.RUNNING_STATE); }
+            public void perform(BitmapButton button) {
+                changeState(Game.RUNNING_STATE); }
         });
         addPointerEventHandler(_startButton);
     }
 
     @Override
-    public void pause() {
-    }
+    public void pause() {_music.pause();}
 
     @Override
-    public void resume() {
-    }
+    public void resume() { _music.resume();}
 
     /**
      * �]�w�e���W���ǹϤ�����ܡA���ǹϤ������áC
