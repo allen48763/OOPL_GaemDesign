@@ -16,12 +16,6 @@ public class Enemy3 implements GameObject {
     int walkSpeed = 15;
     int HP = 8;
 
-
-    boolean isTrigger = false;
-    int index = 0;
-    double fall_velocity = 0;
-    double fall_acceleration = 1;
-
     private boolean haveBoom = false;
     private Animation boom;
     private Animation enemy_A;

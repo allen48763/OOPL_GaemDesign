@@ -223,7 +223,7 @@ public class Enemy implements GameObject {
     }
     public void isTrigger(int x) {
         if(!isDied){
-            if(x1 - x <= 656 && x1 - x > -250){
+            if(x1 - x <= 656 && x1 - x > -656){
                 Trigger = true;
             }
             else
@@ -232,6 +232,14 @@ public class Enemy implements GameObject {
     }
 
     public void Obj_trigger(GameMap map){
+        isTrigger = map.Obj_trigger(x1, index)
+                || map.Obj_trigger(x2, index);
+    }
+    public void Obj_trigger(GameMap2 map){
+        isTrigger = map.Obj_trigger(x1, index)
+                || map.Obj_trigger(x2, index);
+    }
+    public void Obj_trigger(GameMap3 map){
         isTrigger = map.Obj_trigger(x1, index)
                 || map.Obj_trigger(x2, index);
     }

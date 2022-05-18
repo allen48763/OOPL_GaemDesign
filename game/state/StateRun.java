@@ -30,8 +30,8 @@ import tw.edu.ntut.csie.game.extend.Enemy2;
 import tw.edu.ntut.csie.game.extend.Enemy3;
 import tw.edu.ntut.csie.game.extend.GameMap;
 import tw.edu.ntut.csie.game.extend.Hero;
-import tw.edu.ntut.csie.game.extend.Integer;
 import tw.edu.ntut.csie.game.extend.Enemy;
+import tw.edu.ntut.csie.game.extend.Integer;
 
 public class StateRun extends GameState {
     public static final int DEFAULT_SCORE_DIGITS = 4;
@@ -41,23 +41,23 @@ public class StateRun extends GameState {
 
     private int hp;
     private int Invincible;
-    private boolean Dieding = false;
+    private boolean Dieding;
 
-    private boolean keepPressW = false;
-    private boolean keepPressA = false;
-    private boolean keepPressS = false;
-    private boolean keepPressD = false;
-    private boolean keepPressSh = false;
+    private boolean keepPressW;
+    private boolean keepPressA;
+    private boolean keepPressS;
+    private boolean keepPressD;
+    private boolean keepPressSh;
 
     int runSpeed = 7;
     boolean b = false;
 
-    boolean isTrigger = false;
+    boolean isTrigger;
 
-    boolean jump = true;
-    boolean keepJump = false;
-    boolean isRight = true;
-    boolean collisionToR = true;
+    boolean jump;
+    boolean keepJump;
+    boolean isRight;
+    boolean collisionToR;
     private int[] x = {-8,-8,-5,-5,-2,-2,-1,0};
     private int[] y = {72,104,136,168,200,0};
 
@@ -85,29 +85,53 @@ public class StateRun extends GameState {
     private Hero player1;
     private int HeroState;
 
-    int boobMax = 20;
+    int boobMax = 0;
     private Enemy[] boob1;
 
-    int towerMax = 1;
+    int towerMax = 0;
     private Enemy2[] tower;
 
-    int ufoMax = 10;
+    int ufoMax = 0;
     private Enemy3[] ufo;
 
-    //private Integer _scores;
+    private Integer _scores;
     private GameMap _map;
     private Audio _music;
     private MovingBitmap pause_UI;
+    private int UI_x = 210;
+    private int UI_y = 20;
+
+
     private Pointer _pointer1;
     private Pointer _pointer2;
 
-    int px = 200, py = -100;
+    private int SecretSkill;
+
+    int px, py;
     public StateRun(GameEngine engine) {
         super(engine);
     }
 
     @Override
     public void initialize(Map<String, Object> data) {
+
+        px = 200;
+        py = -100;
+
+        Dieding = false;
+
+        keepPressW = false;
+        keepPressA = false;
+        keepPressS = false;
+        keepPressD = false;
+        keepPressSh = false;
+
+        isTrigger = false;
+
+        jump = true;
+        keepJump = false;
+        isRight = true;
+        collisionToR = true;
 
         fall_velocity = 0;
         fall_acceleration = 1;
@@ -124,11 +148,14 @@ public class StateRun extends GameState {
 
         hp = 5;
         Invincible = 160;
+        SecretSkill = 0;
         bulletCount = 0;
 
         i = 0;
         time = 0;
         index = 0;
+
+
 
         for(int i = 0; i < boobMax; i++){
             boob1[i] = new Enemy(500+i*100,0);
@@ -166,10 +193,10 @@ public class StateRun extends GameState {
         Button_RunOrPause = new BitmapButton(R.drawable.button_pause, 600, 10);
 
         _background = new MovingBitmap(R.drawable.map2);
-        pause_UI = new MovingBitmap(R.drawable.ui_pasue, 210, 20);
+        pause_UI = new MovingBitmap(R.drawable.ui_pasue, UI_x, UI_y);
         pause_UI.setVisible(false);
 
-        //_scores = new Integer(DEFAULT_SCORE_DIGITS, 0, 550, 10);
+        _scores = new Integer(DEFAULT_SCORE_DIGITS, 0, 490, 10);
 
         _music = new Audio(R.raw.stage);
         _music.setRepeating(true);
@@ -193,7 +220,6 @@ public class StateRun extends GameState {
             if(bullet[i] != null){
                 bullet[i].show();
             }
-
         }
         for(int i = 0; i < boobMax; i++){
             boob1[i].show();
@@ -213,22 +239,29 @@ public class StateRun extends GameState {
 
         player1.show();
 
-        //_scores.show();
-        //_scores.setValue(Invincible);
+        _scores.show();
+        _scores.setValue(SecretSkill);
 
         for(int i = 0; i < hp; i++) {
             hero_hp[i].show();
         }
         if(Invincible < 200){
             Invincible += 1;
+            if(Invincible == 180&&SecretSkill == 5)
+                    Invincible = 0;
         }
         pause_UI.show();
     }
 
     @Override
     public void move() {
-        if(px < -2600){
-            changeState(Game.RUNNING_STATE2);
+        if(SecretSkill == 5){
+            keepPressW = false;
+            keepPressS = false;
+            keepPressA = false;
+            keepPressD = true;
+            keepPressSh = false;
+            keepJump = false;
         }
         for(int i = 0; i < boobMax; i++){
             boob1[i].Obj_trigger(_map);
@@ -256,14 +289,15 @@ public class StateRun extends GameState {
             if(!tower[i].getState()){
                 time += 1;
                 if(time == 40){
-                    tower[i].makeBullet(player1.getX(), player1.getY(3));
+                    if(!tower[i].isMax())
+                        tower[i].makeBullet(player1.getX(), player1.getY(3));
                     time = 0;
                 }
             }
             for(int j = 0; j <tower[i].getBulletCount(); j++){
                 if(!tower[i].getBulletHit(j)){
                     if(isCollision(tower[i].getBullet(j))&&!Dieding&&(Invincible == 200)){
-                        if(px > boob1[i].getX1())
+                        if(px > tower[i].getX1())
                             collisionToR = true;
                         else
                             collisionToR = false;
@@ -360,8 +394,8 @@ public class StateRun extends GameState {
             if(isTrigger){//如果碰到地面，意味著跳躍結束，"速度"和"加速度"變為零
                 fall_velocity = 0;
                 fall_acceleration = 1;
-
-                player1.setLocationN(px, y[index]);//使著地後，人物y座標貼合地面
+                if(SecretSkill != 5)
+                    player1.setLocationN(px, y[index]);//使著地後，人物y座標貼合地面
                 jump = false;
             }
             else{//如果沒有碰到地面，則繼續掉落
@@ -371,7 +405,13 @@ public class StateRun extends GameState {
         }
 
         //將得到的"速度"加到座標位置
-        player1.setLocation(px, player1.getY(3)+(int)fall_velocity);
+        if(SecretSkill != 5){
+            player1.setLocation(px, player1.getY(3)+(int)fall_velocity);
+        }
+        else{
+            fall_acceleration = 1;
+            fall_velocity = 0;
+        }
 
         if(!Dieding){//如果沒有死
             if(keepPressW){//如果W按鍵被點擊
@@ -385,7 +425,8 @@ public class StateRun extends GameState {
                 }
                 if(keepPressSh)//如果Shoot按鍵被點擊
                     //發射子彈
-                    makeBullet(player1.getX(), player1.getY(3), 2);
+                    if(bulletCount != bulletMAX)
+                        makeBullet(player1.getX(), player1.getY(3), 2);
             }
             else if(keepPressA&&!keepPressD){//如果A按鍵被點擊 (D鍵沒有被點擊)
                 if(px > runSpeed){//如果沒有碰到最左邊界
@@ -400,12 +441,15 @@ public class StateRun extends GameState {
                 else if(keepPressSh){//如果Shoot按鍵被點擊
                     HeroState = 7;
                     player1.setVisible(7 + (Invincible % 2)*20);
-                    if(isRight)//如果面向右邊
+                    if(isRight) {//如果面向右邊
                         //生成"往右的子彈"
-                        makeBullet(player1.getX(), player1.getY(3) - 9, 0);
-                    else//如果面向左邊
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX(), player1.getY(3) - 9, 0);
+                    }else{//如果面向左邊
                         //生成"往左的子彈"
-                        makeBullet(player1.getX(), player1.getY(3) - 9, 1);
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX(), player1.getY(3) - 9, 1);
+                    }
                 }
                 else{
                     HeroState = 6;
@@ -428,6 +472,9 @@ public class StateRun extends GameState {
 
                         for(int i = 0; i < towerMax; i++){
                             tower[i].setLocation(tower[i].getX1() - runSpeed, tower[i].getY1());
+                            for(int j = 0; j <tower[i].getBulletCount(); j++){
+                                tower[i].getBullet(j).setLocation(tower[i].getBullet(j).getX1() - runSpeed, tower[i].getBullet(j).getY1());
+                            }
                         }
                         for(int i = 0; i < ufoMax; i++){
                             ufo[i].setLocation(ufo[i].getX1() - runSpeed, ufo[i].getY1());
@@ -436,6 +483,9 @@ public class StateRun extends GameState {
                     else{
                         px += runSpeed;
                         player1.setLocation(px, player1.getY(3));
+                        if(px >= 580){
+                            changeState(Game.LEVEL_TWO);
+                        }
                     }
                 }
                 if(keepPressS){
@@ -448,10 +498,14 @@ public class StateRun extends GameState {
                     HeroState = 2;
                     player1.setVisible(2 + (Invincible % 2)*20);
 
-                    if(isRight)
-                        makeBullet(player1.getX() - 2, player1.getY(3) - 9, 0);
-                    else
-                        makeBullet(player1.getX() - 2, player1.getY(3) - 9, 1);
+                    if(isRight){
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX() - 2, player1.getY(3) - 9, 0);
+                    }
+                    else{
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX() - 2, player1.getY(3) - 9, 1);
+                    }
                 }
                 else{
                     HeroState = 1;
@@ -461,10 +515,14 @@ public class StateRun extends GameState {
             }
             else if(keepPressS&&!keepPressA&&!keepPressD){
                 if(keepPressSh){
-                    if(isRight)
-                        makeBullet(player1.getX(), player1.getY(3) + 2, 0);
-                    else
-                        makeBullet(player1.getX(), player1.getY(3) + 2, 1);
+                    if(isRight){
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX(), player1.getY(3) + 2, 0);
+                    }
+                    else{
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX(), player1.getY(3) + 2, 1);
+                    }
                 }
                 if(isRight){
                     HeroState = 4;
@@ -489,10 +547,14 @@ public class StateRun extends GameState {
                     player1.setVisible(8 + (Invincible % 2)*20);
                 }
                 if(keepPressSh){
-                    if(isRight)
-                        makeBullet(player1.getX() - 2, player1.getY(3) - 9, 0);
-                    else
-                        makeBullet(player1.getX() - 2, player1.getY(3) - 9, 1);
+                    if(isRight){
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX() - 2, player1.getY(3) - 9, 0);
+                    }
+                    else{
+                        if(bulletCount != bulletMAX)
+                            makeBullet(player1.getX() - 2, player1.getY(3) - 9, 1);
+                    }
                 }
             }
         }else{
@@ -566,8 +628,8 @@ public class StateRun extends GameState {
         _map.release();
         _map = null;
 
-        //_scores.release();
-        //_scores = null;
+        _scores.release();
+        _scores = null;
 
         _music.release();
         _music = null;
@@ -623,28 +685,59 @@ public class StateRun extends GameState {
                 return true;
             }
             if(ButtonW.pointerPressed(actionPointer, pointers)){
+                if(SecretSkill == 0) {
+                    SecretSkill += 1;
+                }
+                else if(SecretSkill != 5){
+                    SecretSkill =0;
+                }
                 keepPressW = true;
                 return true;
             }
             if(ButtonS.pointerPressed(actionPointer, pointers)){
+                if(SecretSkill == 1||SecretSkill == 3){
+                    SecretSkill += 1;
+                }
+                else if(SecretSkill != 5){
+                    SecretSkill = 0;
+                }
                 keepPressS = true;
                 return true;
             }
             if(ButtonA.pointerPressed(actionPointer, pointers)){
+                if(SecretSkill == 2){
+                    SecretSkill += 1;
+                }
+                else if(SecretSkill != 5){
+                    SecretSkill = 0;
+                }
                 keepPressA = true;
                 isRight = false;
                 return true;
             }
             if(ButtonD.pointerPressed(actionPointer, pointers)){
+                if(SecretSkill == 4){
+                    SecretSkill += 1;
+                    Invincible = 0;
+                }
+                else if(SecretSkill != 5){
+                    SecretSkill = 0;
+                }
                 keepPressD = true;
                 isRight = true;
                 return true;
             }
             if(ButtonSh.pointerPressed(actionPointer, pointers)){
+                if(SecretSkill != 5){
+                    SecretSkill = 0;
+                }
                 keepPressSh = true;
                 return true;
             }
             if(ButtonJump.pointerPressed(actionPointer, pointers)){
+                if(SecretSkill != 5){
+                    SecretSkill = 0;
+                }
                 if(!jump){
                     jump = true;
                     keepJump = true;
@@ -653,9 +746,27 @@ public class StateRun extends GameState {
             }
         }
         else{
-            if(Button_RunOrPause.pointerPressed(actionPointer, pointers)){
+            int ppx = actionPointer.getX();
+            int ppy = actionPointer.getY();
+
+            if(ppx >= UI_x+40 && ppx <= UI_x+200 &&
+                    ppy >= UI_y+28 && ppy <= UI_y+68){
                 _engine.resume();
                 pause_UI.setVisible(false);
+                return true;
+            }
+            else if(ppx >= UI_x+40 && ppx <= UI_x+200 &&
+                    ppy >= UI_y+70 && ppy <= UI_y+110){
+                _engine.resume();
+                _music.stop();
+                changeState(Game.INITIAL_STATE);
+                return true;
+            }
+            else if(ppx >= UI_x+40 && ppx <= UI_x+200 &&
+                    ppy >= UI_y+115 && ppy <= UI_y+155){
+                _engine.resume();
+                _music.stop();
+                _engine.exit();
                 return true;
             }
         }

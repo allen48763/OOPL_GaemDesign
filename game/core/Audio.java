@@ -93,6 +93,7 @@ public class Audio implements ReleasableResource {
     public void release() {
         if (_player != null) {
             _player.stop();
+            _player.reset();
             _player.release();
         }
         _player = null;

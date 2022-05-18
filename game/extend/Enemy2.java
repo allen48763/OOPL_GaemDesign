@@ -13,7 +13,7 @@ public class Enemy2 implements GameObject {
     private int x1, x2, y1, y2;
     private boolean isDied = false;
     int walkSpeed = 5;
-    int HP = 8;
+    int HP = 4;
     private boolean Trigger = false;
 
     private boolean haveFire = false;
@@ -26,7 +26,7 @@ public class Enemy2 implements GameObject {
     private MovingBitmap HP_red;
     private MovingBitmap HP_gray;
 
-    int bulletMAX = 10000;
+    int bulletMAX = 10;
     private Bullet_T[] bullet = new Bullet_T[bulletMAX];
 
     private int[] bulletDirX = new int[bulletMAX];
@@ -95,7 +95,7 @@ public class Enemy2 implements GameObject {
 
         HP_white.show();
         HP_gray.show();
-        HP_red.resize(HP * 5, HP_red.getHeight());
+        HP_red.resize(HP * 10, HP_red.getHeight());
         HP_red.show();
 
         for(int i = 0; i < bulletCount; i++){
@@ -175,6 +175,13 @@ public class Enemy2 implements GameObject {
         else {
             return false;
         }
+    }
+
+    public boolean isMax(){
+        if(bulletCount != bulletMAX)
+            return false;
+        else
+            return true;
     }
 
     public boolean getState(){ return !Trigger;}

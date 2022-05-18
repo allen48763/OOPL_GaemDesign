@@ -8,11 +8,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import tw.edu.ntut.csie.game.engine.GameEngine;
+import tw.edu.ntut.csie.game.state.Level1;
+import tw.edu.ntut.csie.game.state.Level2;
+import tw.edu.ntut.csie.game.state.Level3;
 import tw.edu.ntut.csie.game.state.StateOver;
 import tw.edu.ntut.csie.game.state.StateReady;
 import tw.edu.ntut.csie.game.state.StateRun;
 import tw.edu.ntut.csie.game.state.StateRun2;
 import tw.edu.ntut.csie.game.state.StateRun3;
+import tw.edu.ntut.csie.game.state.StateWin;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
 import static android.hardware.Sensor.TYPE_ORIENTATION;
@@ -38,7 +42,10 @@ public class Game extends Activity {
     public static final int OVER_STATE = 3;
     public static final int RUNNING_STATE2 = 4;
     public static final int RUNNING_STATE3 = 5;
-
+    public static final int WIN_STATE = 6;
+    public static final int LEVEL_ONE = 7;
+    public static final int LEVEL_TWO = 8;
+    public static final int LEVEL_THREE = 9;
     /**
      * 預設的畫面更新速度，一秒約15張畫面(理想值)。
      */
@@ -114,9 +121,13 @@ public class Game extends Activity {
             //_engine.setDisplayRatio(1.0f);
             // TODO 註冊狀態處理者
             _engine.registerGameState(INITIAL_STATE, new StateReady(_engine));
+            _engine.registerGameState(LEVEL_ONE, new Level1(_engine));
             _engine.registerGameState(RUNNING_STATE, new StateRun(_engine));
+            _engine.registerGameState(LEVEL_TWO, new Level2(_engine));
             _engine.registerGameState(RUNNING_STATE2, new StateRun2(_engine));
+            _engine.registerGameState(LEVEL_THREE, new Level3(_engine));
             _engine.registerGameState(RUNNING_STATE3, new StateRun3(_engine));
+            _engine.registerGameState(WIN_STATE, new StateWin(_engine));
             _engine.registerGameState(OVER_STATE, new StateOver(_engine));
             _engine.setGameState(INITIAL_STATE);
             _view.setGameEngine(_engine);
